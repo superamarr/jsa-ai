@@ -10,6 +10,7 @@ Dokumentasi untuk endpoint n8n webhook yang digunakan oleh sistem RAG JSA Kideco
 - [2. Upload JSA](#2-upload-jsa)
 - [3. Autentikasi](#3-autentikasi)
 - [4. Kode Status & Error](#4-kode-status--error)
+- [5. Catatan Implementasi n8n](#5-catatan-implementasi-n8n)
 
 ---
 
@@ -27,7 +28,8 @@ Mengirim pertanyaan ke AI RAG untuk mendapatkan jawaban berdasarkan dokumen JSA 
 
 ```json
 {
-  "pesan": "string (required) — pertanyaan user tentang JSA"
+  "pesan": "string (required) — pertanyaan user tentang JSA",
+  "sessionId": "string (opsional) — ID sesi untuk riwayat chat per user"
 }
 ```
 
@@ -35,7 +37,8 @@ Mengirim pertanyaan ke AI RAG untuk mendapatkan jawaban berdasarkan dokumen JSA 
 
 ```json
 {
-  "pesan": "jika ada ular gimana"
+  "pesan": "jika ada ular gimana",
+  "sessionId": "user-taufik-123"
 }
 ```
 
@@ -82,13 +85,22 @@ Mengirim pertanyaan ke AI RAG untuk mendapatkan jawaban berdasarkan dokumen JSA 
 }
 ```
 
+#### 502 — Bad Gateway (response kosong dari n8n)
+
+```json
+{
+  "success": false,
+  "message": "n8n mengembalikan respons kosong. Pastikan workflow memiliki node \"Respond to Webhook\"."
+}
+```
+
 ### Contoh via curl
 
 ```bash
 curl -X POST "https://zekku.app.n8n.cloud/webhook/tanya-jsa" \
   -H "Content-Type: application/json" \
   -H "rag-jsa: jsakideco" \
-  -d '{"pesan": "jika ada ular gimana"}'
+  -d '{"pesan": "jika ada ular gimana", "sessionId": "user-taufik-123"}'
 ```
 
 ---
@@ -120,7 +132,7 @@ Upload dokumen JSA (PDF, DOCX, TXT) untuk diproses dan disimpan ke database.
 
 | Field | Type | Deskripsi |
 |-------|------|-----------|
-| `message` | string | Konfirmasi bahwa workflow berjalan |
+| `message` | string | Konfirmasi bahwa workflow berjalan (proses ke database berjalan di background) |
 
 ### Response Error
 
@@ -139,6 +151,15 @@ Upload dokumen JSA (PDF, DOCX, TXT) untuk diproses dan disimpan ke database.
 {
   "code": 404,
   "message": "The requested webhook \"POST upload-jsa\" is not registered."
+}
+```
+
+#### 500 — Internal Server Error (workflow gagal)
+
+```json
+{
+  "success": false,
+  "message": "Error in workflow"
 }
 ```
 
@@ -179,5 +200,52 @@ rag-jsa: jsakideco
 | `403` | Forbidden | Header auth salah atau tidak dikirim |
 | `404` | Not Found | Webhook belum diaktifkan (workflow tidak active) |
 | `422` | Unprocessable Entity | JSON body tidak valid (syntax error) |
+| `500` | Internal Error | Workflow n8n gagal dieksekusi |
+| `502` | Bad Gateway | n8n mengembalikan response kosong |
+
+### Cara mengatasi 404
+
+1. Buka dashboard n8n di `https://zekku.app.n8n.cloud`
+2. Cari workflow yang memiliki webhook terkait
+3. Klik toggle **Active** di pojok kanan atas editor
+4. Tunggu beberapa detik, lalu coba lagi
 
 ---
+
+## 5. Catatan Implementasi n8n
+
+### Respond to Webhook
+
+Node **"Respond to Webhook"** harus dikonfigurasi dengan mode **Key / Value** (bukan JSON string), agar expression tidak merusak format JSON:
+
+| Key | Value |
+|-----|-------|
+| `success` | `true` |
+| `reply` | `{{ JSON.stringify($json.output) }}` |
+
+### Session ID untuk Riwayat Chat
+
+Di node **Simple Memory**, set **Session ID** menggunakan expression:
+
+```
+{{ $json.body.sessionId }}
+```
+
+Kirim `sessionId` dari frontend untuk membedakan riwayat chat antar user. Contoh dari website:
+
+```javascript
+// Frontend — dikirim setiap chat
+fetch("https://zekku.app.n8n.cloud/webhook/tanya-jsa", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "rag-jsa": "jsakideco" },
+  body: JSON.stringify({
+    pesan: "jika unit amblas bagaimana",
+    sessionId: "user-taufik-123"
+  })
+})
+```
+
+---
+
+> **Last updated**: 17 Juni 2026
+> **Maintainer**: Kideco Team
