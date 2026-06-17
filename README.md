@@ -57,19 +57,7 @@ npm install
 cd ..
 ```
 
-### 2. Konfigurasi `.env`
-
-Pastikan file `.env` di root berisi:
-
-```env
-PORT=5000
-N8N_UPLOAD_URL=https://zekku.app.n8n.cloud/webhook/upload-jsa
-N8N_CHAT_URL=https://zekku.app.n8n.cloud/webhook/tanya-jsa
-N8N_AUTH_HEADER_NAME=rag-jsa
-N8N_AUTH_HEADER_VALUE=jsakideco
-```
-
-### 3. Jalankan (butuh 2 terminal)
+### 2. Jalankan (butuh 2 terminal)
 
 **Terminal 1 — Backend:**
 
@@ -107,22 +95,3 @@ Website di `http://localhost:3000`.
 
 Dokumentasi lengkap endpoint n8n ada di [API.md](./API.md).
 
-## Deploy
-
-### Frontend (Vercel)
-
-Repo sudah terhubung ke Vercel. Push ke `main` otomatis deploy.
-
-Set environment variable di Vercel dashboard:
-
-```
-VITE_API_URL = https://backend-url.com/api
-```
-
-### Backend (Render / Railway)
-
-Backend Express bisa di-deploy ke Render.com atau Railway.app.
-
-## Lisensi
-
-Hak cipta Kideco.
