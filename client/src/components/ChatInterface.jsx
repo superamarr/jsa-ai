@@ -2,6 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { sendChatMessage } from '../api'
 import ChatMessage from './ChatMessage'
 
+function generateId() {
+  return 'user-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
+}
+
+const sessionId = generateId()
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState([
     {
@@ -37,7 +43,7 @@ export default function ChatInterface() {
     setLoading(true)
 
     try {
-      const res = await sendChatMessage(text)
+      const res = await sendChatMessage(text, sessionId)
       const botMsg = {
         role: 'bot',
         content: res.data.reply || 'Tidak ada respons.',

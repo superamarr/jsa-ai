@@ -17,6 +17,6 @@ export const uploadDocument = (file, onProgress) => {
 
 export const getDocuments = () => api.get('/documents')
 
-export const sendChatMessage = (pesan) => api.post('/chat', { pesan })
+export const sendChatMessage = (pesan, sessionId) => api.post('/chat', { pesan, sessionId })
 
 export default api

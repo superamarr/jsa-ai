@@ -4,7 +4,7 @@ const axios = require('axios');
 const router = express.Router();
 
 router.post('/chat', async (req, res) => {
-  const { pesan } = req.body;
+  const { pesan, sessionId } = req.body;
 
   if (!pesan || !pesan.trim()) {
     return res.status(400).json({
@@ -24,11 +24,10 @@ router.post('/chat', async (req, res) => {
       headers[authHeaderName] = authHeaderValue;
     }
 
-    const response = await axios.post(
-      n8nUrl,
-      { pesan: pesan.trim() },
-      { headers }
-    );
+    const body = { pesan: pesan.trim() };
+    if (sessionId) body.sessionId = sessionId;
+
+    const response = await axios.post(n8nUrl, body, { headers });
 
     const reply = response.data?.reply || response.data;
     if (!reply || (typeof reply === 'object' && Object.keys(reply).length === 0)) {
