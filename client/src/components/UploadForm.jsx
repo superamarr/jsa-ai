@@ -1,19 +1,21 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { uploadDocument } from '../api'
+import Toast from './Toast'
 
 export default function UploadForm({ onUploadSuccess }) {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type = 'success') => setToast({ message, type })
+  const closeToast = () => setToast(null)
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0]
     if (!file) return
 
-    setError('')
-    setSuccess('')
+    closeToast()
     setUploading(true)
     setProgress(0)
 
@@ -23,10 +25,10 @@ export default function UploadForm({ onUploadSuccess }) {
         setProgress(pct)
       })
 
-      setSuccess(`"${file.name}" berhasil diupload!`)
+      showToast(`"${file.name}" berhasil diupload!`, 'success')
       if (onUploadSuccess) onUploadSuccess(res.data)
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Gagal upload file')
+      showToast(err.response?.data?.message || err.message || 'Gagal upload file', 'error')
     } finally {
       setUploading(false)
       setProgress(0)
@@ -83,16 +85,8 @@ export default function UploadForm({ onUploadSuccess }) {
         </div>
       )}
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-          {success}
-        </div>
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={closeToast} />
       )}
     </div>
   )
