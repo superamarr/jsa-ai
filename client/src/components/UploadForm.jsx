@@ -25,7 +25,8 @@ export default function UploadForm({ onUploadSuccess }) {
         setProgress(pct)
       })
 
-      showToast(`"${file.name}" berhasil diupload!`, 'success')
+      const msg = res.data.message || `"${file.name}" berhasil diupload!`
+      showToast(msg, res.data.success ? 'success' : 'error')
       if (onUploadSuccess) onUploadSuccess(res.data)
     } catch (err) {
       showToast(err.response?.data?.message || err.message || 'Gagal upload file', 'error')

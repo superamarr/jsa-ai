@@ -63,8 +63,10 @@ export default function DocumentList({ refreshKey }) {
               <p className="text-xs text-gray-500">{formatSize(doc.size)} • {formatDate(doc.uploadedAt)}</p>
             </div>
           </div>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            {doc.status}
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            doc.status === 'ready' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {doc.status === 'processing' ? 'Diproses' : 'Siap'}
           </span>
         </div>
       ))}

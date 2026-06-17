@@ -76,17 +76,22 @@ router.post('/upload', (req, res, next) => {
 
       fs.unlinkSync(filePath);
 
+      const status = response.data?.message === 'Workflow was started' ? 'processing' : 'ready';
+
       const doc = {
         id: uuidv4(),
         name: req.file.originalname,
         size: req.file.size,
         uploadedAt: new Date().toISOString(),
-        status: 'ready',
+        status,
       };
       documents.push(doc);
 
       res.json({
-        success: true,
+        success: status === 'ready',
+        message: status === 'processing'
+          ? 'File terkirim ke sistem, sedang diproses...'
+          : 'File berhasil diupload!',
         document: doc,
         n8nResponse: response.data,
       });
